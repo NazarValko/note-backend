@@ -1,7 +1,7 @@
 package org.nazar.notesbackend.controller;
 
 import java.util.List;
-import org.nazar.notesbackend.entity.Note;
+import org.nazar.notesbackend.entity.dto.NoteDto;
 import org.nazar.notesbackend.service.NoteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,23 +23,23 @@ public class NoteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Note>> getAll() {
+    public ResponseEntity<List<NoteDto>> getAll() {
         return ResponseEntity.ok(noteService.getAllNotes());
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Note> getById(@PathVariable Long id) {
+    public ResponseEntity<NoteDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(noteService.getNoteById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Note> createNote(@RequestBody Note saveRequest) {
+    public ResponseEntity<NoteDto> createNote(@RequestBody NoteDto saveRequest) {
         return ResponseEntity.ok(noteService.createNote(saveRequest));
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Note> updateNote(@RequestBody Note updateRequest, @PathVariable Long id) {
-        return ResponseEntity.ok(noteService.updateNote( updateRequest, id));
+    public ResponseEntity<NoteDto> updateNote(@RequestBody NoteDto updateRequest, @PathVariable Long id) {
+        return ResponseEntity.ok(noteService.updateNote(updateRequest, id));
     }
 
     @DeleteMapping("{id}")

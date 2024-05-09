@@ -1,9 +1,9 @@
 package org.nazar.notesbackend.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.nazar.notesbackend.entity.Note;
+import org.nazar.notesbackend.entity.dto.NoteDto;
 import org.nazar.notesbackend.repository.NotesRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,29 +15,32 @@ public class NoteService {
         this.notesRepository = notesRepository;
     }
 
-    public Note getNoteById(Long id) {
-        return notesRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id));
+    public NoteDto getNoteById(Long id) {
+        return notesRepository.mapToDto(
+                notesRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id)));
     }
 
-    public List<Note> getAllNotes() {
-        return notesRepository.findAll();
+    public List<NoteDto> getAllNotes() {
+        return notesRepository.findAll().stream().map(notesRepository::mapToDto).toList();
     }
 
-    public Note createNote(Note request) {
+    public NoteDto createNote(NoteDto request) {
         if (notesRepository.existsNoteByName(request.getName())) {
             throw new IllegalArgumentException("Note with such name: " + request.getName() + " already exists");
         }
-        request.setCreatedAt(LocalDate.now());
-        return notesRepository.save(request);
+
+        Note noteToBeSaved = notesRepository.mapToEntity(request);
+
+        return notesRepository.mapToDto(notesRepository.save(noteToBeSaved));
     }
 
-    public Note updateNote(Note newNote, Long id) {
+    public NoteDto updateNote(NoteDto newNote, Long id) {
         Note noteToUpdate = notesRepository.findNoteById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id));
 
         Optional.ofNullable(newNote.getName()).ifPresent(noteToUpdate::setName);
         Optional.ofNullable(newNote.getDescription()).ifPresent(noteToUpdate::setDescription);
 
-        return notesRepository.save(noteToUpdate);
+        return notesRepository.mapToDto(notesRepository.save(noteToUpdate));
     }
 
     public void deleteById(Long id) {
