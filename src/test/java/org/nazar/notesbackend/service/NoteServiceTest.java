@@ -21,8 +21,11 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for the NoteService class using Mockito.
+ */
 @ExtendWith(MockitoExtension.class)
-public class NoteServiceTest {
+class NoteServiceTest {
     @Mock
     private NotesRepository notesRepository;
 
@@ -32,6 +35,9 @@ public class NoteServiceTest {
     private NoteDto noteDto;
     private Note note;
 
+    /**
+     * Set up common test objects and configurations.
+     */
     @BeforeEach
     void setUp() {
         noteDto = new NoteDto();
@@ -44,6 +50,10 @@ public class NoteServiceTest {
         note.setName(noteDto.getName());
         note.setDescription(noteDto.getDescription());
     }
+
+    /**
+     * Test to verify that getAllNotes returns a list of notes when they exist.
+     */
     @Test
     void testGetAllNotes_WhenNotesExist_ThenReturnNoteList() {
         when(notesRepository.findAll()).thenReturn(List.of(note));
@@ -54,6 +64,10 @@ public class NoteServiceTest {
         assertEquals(1, noteDtos.size());
         assertEquals("Sample Note", noteDtos.getFirst().getName());
     }
+
+    /**
+     * Test to verify that getNoteById returns the correct note DTO when the note exists.
+     */
     @Test
     void testGetNoteById_WhenNoteExists_ThenReturnNoteDto() {
         when(notesRepository.findById(1L)).thenReturn(Optional.of(note));
@@ -65,6 +79,9 @@ public class NoteServiceTest {
         assertEquals("Sample Note", foundNote.getName());
     }
 
+    /**
+     * Test to verify that getNoteById throws an exception when the note does not exist.
+     */
     @Test
     void testGetNoteById_WhenNoteDoesNotExist_ThenThrowException() {
         when(notesRepository.findById(anyLong())).thenReturn(Optional.empty());
@@ -74,6 +91,9 @@ public class NoteServiceTest {
         assertEquals("Cannot find note with such id: 1", exception.getMessage());
     }
 
+    /**
+     * Test to verify that createNote returns the saved note DTO when the note name is unique.
+     */
     @Test
     void testCreateNote_WhenNameIsUnique_ThenReturnSavedNote() {
         when(notesRepository.mapToEntity(noteDto)).thenReturn(note);
@@ -87,6 +107,9 @@ public class NoteServiceTest {
         assertEquals("Sample Note", savedNote.getName());
     }
 
+    /**
+     * Test to verify that createNote throws an exception when the note name already exists.
+     */
     @Test
     void testCreateNote_WhenNameAlreadyExists_ThenThrowException() {
         when(notesRepository.existsNoteByName(noteDto.getName())).thenReturn(true);
@@ -96,6 +119,9 @@ public class NoteServiceTest {
         assertEquals("Note with such name: Sample Note already exists", exception.getMessage());
     }
 
+    /**
+     * Test to verify that updateNote returns the updated note DTO when the original note exists.
+     */
     @Test
     void testUpdateNote_WhenNoteExists_ThenReturnUpdatedNote() {
         when(notesRepository.findNoteById(1L)).thenReturn(Optional.of(note));
@@ -108,6 +134,9 @@ public class NoteServiceTest {
         assertEquals("Sample Note", updatedNote.getName());
     }
 
+    /**
+     * Test to verify that updateNote throws an exception when the note does not exist.
+     */
     @Test
     void testUpdateNote_WhenNoteDoesNotExist_ThenThrowException() {
         when(notesRepository.findNoteById(anyLong())).thenReturn(Optional.empty());
@@ -117,6 +146,9 @@ public class NoteServiceTest {
         assertEquals("Cannot find note with such id: 1", exception.getMessage());
     }
 
+    /**
+     * Test to verify that deleteById completes without throwing an exception when the note exists.
+     */
     @Test
     void testDeleteById_WhenNoteExists_ThenSuccess() {
         when(notesRepository.existsNoteById(1L)).thenReturn(true);
@@ -125,6 +157,9 @@ public class NoteServiceTest {
         assertDoesNotThrow(() -> noteService.deleteById(1L));
     }
 
+    /**
+     * Test to verify that deleteById throws an exception when the note does not exist.
+     */
     @Test
     void testDeleteById_WhenNoteDoesNotExist_ThenThrowException() {
         when(notesRepository.existsNoteById(anyLong())).thenReturn(false);

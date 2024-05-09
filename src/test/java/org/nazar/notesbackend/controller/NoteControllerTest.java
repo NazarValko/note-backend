@@ -24,8 +24,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Spring MVC test for the NoteController class.
+ */
 @WebMvcTest(NoteController.class)
-public class NoteControllerTest {
+class NoteControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -33,6 +36,11 @@ public class NoteControllerTest {
     @MockBean
     private NoteService noteService;
 
+    /**
+     * Helper method to convert an object into JSON string.
+     * @param obj The object to be converted to JSON.
+     * @return JSON string representation of the object.
+     */
     private String asJsonString(final Object obj) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -43,8 +51,12 @@ public class NoteControllerTest {
         }
     }
 
+    /**
+     * Test to verify that the getAllNotes method returns all notes when notes exist.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testGetAllNotes_WhenNotesExist_ThenReturnNotes() throws Exception {
+    void testGetAllNotes_WhenNotesExist_ThenReturnNotes() throws Exception {
         LocalDate today = LocalDate.now();
         List<NoteDto> notes = List.of(
                 new NoteDto(1L, "Test Note", "This is a test note", today)
@@ -59,8 +71,12 @@ public class NoteControllerTest {
                 .andExpect(jsonPath("$[0].createdAt").value(today.toString()));
     }
 
+    /**
+     * Test to verify that the getAllNotes method returns an empty list when no notes exist.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testGetAllNotes_WhenNoNotesExist_ThenReturnEmpty() throws Exception {
+    void testGetAllNotes_WhenNoNotesExist_ThenReturnEmpty() throws Exception {
         when(noteService.getAllNotes()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/notes"))
@@ -68,8 +84,12 @@ public class NoteControllerTest {
                 .andExpect(content().json("[]"));
     }
 
+    /**
+     * Test to verify that the getNoteById method returns the note when the note exists.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testGetNoteById_WhenNoteExists_ThenReturnNote() throws Exception {
+    void testGetNoteById_WhenNoteExists_ThenReturnNote() throws Exception {
         LocalDate today = LocalDate.now();
         NoteDto note = new NoteDto(1L, "Test Note", "This is a test note", today);
         when(noteService.getNoteById(1L)).thenReturn(note);
@@ -82,16 +102,24 @@ public class NoteControllerTest {
                 .andExpect(jsonPath("$.createdAt").value(today.toString()));
     }
 
+    /**
+     * Test to verify that the getNoteById method returns a BadRequest when the note does not exist.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testGetNoteById_WhenNoteDoesNotExist_ThenBadRequest() throws Exception {
+    void testGetNoteById_WhenNoteDoesNotExist_ThenBadRequest() throws Exception {
         when(noteService.getNoteById(1L)).thenThrow(new IllegalArgumentException("Cannot find note with such id: 1"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/notes/1"))
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test to verify that the createNote method returns the created note.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testCreateNote_WhenNoteIsCreated_ThenReturnCreatedNote() throws Exception {
+    void testCreateNote_WhenNoteIsCreated_ThenReturnCreatedNote() throws Exception {
         LocalDate today = LocalDate.now();
         NoteDto newNote = new NoteDto(2L, "New Note", "This is a new note", today);
 
@@ -107,8 +135,12 @@ public class NoteControllerTest {
                 .andExpect(jsonPath("$.createdAt").value(today.toString()));
     }
 
+    /**
+     * Test to verify that the createNote method returns a BadRequest when the note name already exists.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testCreateNote_WhenNameExists_ThenBadRequest() throws Exception {
+    void testCreateNote_WhenNameExists_ThenBadRequest() throws Exception {
         LocalDate today = LocalDate.now();
         NoteDto newNote = new NoteDto(null, "Existing Note", "This is a duplicate note", today);
 
@@ -121,8 +153,12 @@ public class NoteControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test to verify that the updateNote method returns the updated note when it exists.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testUpdateNote_WhenNoteExists_ThenReturnUpdatedNote() throws Exception {
+    void testUpdateNote_WhenNoteExists_ThenReturnUpdatedNote() throws Exception {
         LocalDate today = LocalDate.now();
         NoteDto updatedNote = new NoteDto(1L, "Updated Name", "Updated Description", today);
 
@@ -137,8 +173,12 @@ public class NoteControllerTest {
                 .andExpect(jsonPath("$.description").value("Updated Description"));
     }
 
+    /**
+     * Test to verify that the updateNote method returns a BadRequest when the note does not exist.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testUpdateNote_WhenNoteDoesNotExist_ThenBadRequest() throws Exception {
+    void testUpdateNote_WhenNoteDoesNotExist_ThenBadRequest() throws Exception {
         when(noteService.updateNote(any(NoteDto.class), eq(1L))).thenThrow(new IllegalArgumentException("Cannot find note with such id: 1"));
 
         NoteDto updatedNote = new NoteDto(1L, "Updated Name", "Updated Description", null);
@@ -149,8 +189,12 @@ public class NoteControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test to verify that the deleteNote method returns a success message when the note exists.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testDeleteNote_WhenNoteExists_ThenReturnSuccessMessage() throws Exception {
+    void testDeleteNote_WhenNoteExists_ThenReturnSuccessMessage() throws Exception {
         doNothing().when(noteService).deleteById(1L);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/notes/1"))
@@ -158,8 +202,12 @@ public class NoteControllerTest {
                 .andExpect(content().string("Note with id: 1 was deleted successfully"));
     }
 
+    /**
+     * Test to verify that the deleteNote method returns a BadRequest when the note does not exist.
+     * @throws Exception when mockMvc perform throws an exception.
+     */
     @Test
-    public void testDeleteNote_WhenNoteDoesNotExist_ThenBadRequest() throws Exception {
+    void testDeleteNote_WhenNoteDoesNotExist_ThenBadRequest() throws Exception {
         doThrow(new IllegalArgumentException("Cannot find note with such id: 1")).when(noteService).deleteById(1L);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/notes/1"))

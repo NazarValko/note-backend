@@ -8,6 +8,9 @@ import org.nazar.notesbackend.repository.NotesRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service layer for managing notes.
+ */
 @Service
 public class NoteService {
     private final NotesRepository notesRepository;
@@ -16,15 +19,29 @@ public class NoteService {
         this.notesRepository = notesRepository;
     }
 
+    /**
+     * Retrieves a note by its ID.
+     * @param id the ID of the note to retrieve.
+     * @return the NoteDto of the retrieved note.
+     */
     public NoteDto getNoteById(Long id) {
         return notesRepository.mapToDto(
                 notesRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id)));
     }
 
+    /**
+     * Retrieves all notes.
+     * @return a List of NoteDto representing all notes.
+     */
     public List<NoteDto> getAllNotes() {
         return notesRepository.findAll().stream().map(notesRepository::mapToDto).toList();
     }
 
+    /**
+     * Creates a new note.
+     * @param request the NoteDto containing the note details.
+     * @return the NoteDto of the newly created note.
+     */
     @Transactional
     public NoteDto createNote(NoteDto request) {
         if (notesRepository.existsNoteByName(request.getName())) {
@@ -36,6 +53,12 @@ public class NoteService {
         return notesRepository.mapToDto(notesRepository.save(noteToBeSaved));
     }
 
+    /**
+     * Updates an existing note.
+     * @param newNote the NoteDto containing the updated details.
+     * @param id the ID of the note to update.
+     * @return the NoteDto of the updated note.
+     */
     @Transactional
     public NoteDto updateNote(NoteDto newNote, Long id) {
         Note noteToUpdate = notesRepository.findNoteById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id));
@@ -46,6 +69,10 @@ public class NoteService {
         return notesRepository.mapToDto(notesRepository.save(noteToUpdate));
     }
 
+    /**
+     * Deletes a note by its ID.
+     * @param id the ID of the note to delete.
+     */
     @Transactional
     public void deleteById(Long id) {
         if (!notesRepository.existsNoteById(id)) {

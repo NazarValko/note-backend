@@ -6,8 +6,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+/**
+ * Global exception handler that captures and handles specific exceptions across the entire application.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Handles IllegalArgumentExceptions thrown anywhere in the application.
+     * @param ex the exception that was thrown.
+     * @return a ResponseEntity containing the error details.
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(Exception ex) {
         ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());

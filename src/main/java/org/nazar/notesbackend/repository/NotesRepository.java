@@ -6,6 +6,9 @@ import org.nazar.notesbackend.entity.dto.NoteDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Spring Data JPA repository for the Note entity.
+ */
 @Repository
 public interface NotesRepository extends JpaRepository<Note, Long> {
     Optional<Note> findNoteById(Long id);
