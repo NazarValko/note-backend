@@ -6,6 +6,7 @@ import org.nazar.notesbackend.entity.Note;
 import org.nazar.notesbackend.entity.dto.NoteDto;
 import org.nazar.notesbackend.repository.NotesRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NoteService {
@@ -24,6 +25,7 @@ public class NoteService {
         return notesRepository.findAll().stream().map(notesRepository::mapToDto).toList();
     }
 
+    @Transactional
     public NoteDto createNote(NoteDto request) {
         if (notesRepository.existsNoteByName(request.getName())) {
             throw new IllegalArgumentException("Note with such name: " + request.getName() + " already exists");
@@ -34,6 +36,7 @@ public class NoteService {
         return notesRepository.mapToDto(notesRepository.save(noteToBeSaved));
     }
 
+    @Transactional
     public NoteDto updateNote(NoteDto newNote, Long id) {
         Note noteToUpdate = notesRepository.findNoteById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id));
 
@@ -43,6 +46,7 @@ public class NoteService {
         return notesRepository.mapToDto(notesRepository.save(noteToUpdate));
     }
 
+    @Transactional
     public void deleteById(Long id) {
         if (!notesRepository.existsNoteById(id)) {
             throw new IllegalArgumentException("Cannot find note with such id: " + id);
