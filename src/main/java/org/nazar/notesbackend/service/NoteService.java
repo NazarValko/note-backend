@@ -1,9 +1,11 @@
 package org.nazar.notesbackend.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.nazar.notesbackend.entity.Note;
 import org.nazar.notesbackend.entity.dto.NoteDto;
+import org.nazar.notesbackend.mapper.NoteMapper;
 import org.nazar.notesbackend.repository.NotesRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class NoteService {
     private final NotesRepository notesRepository;
 
-    public NoteService(NotesRepository notesRepository) {
+    private final NoteMapper noteMapper;
+
+    public NoteService(NotesRepository notesRepository, NoteMapper noteMapper) {
         this.notesRepository = notesRepository;
+        this.noteMapper = noteMapper;
     }
 
     /**
@@ -24,8 +29,9 @@ public class NoteService {
      * @param id the ID of the note to retrieve.
      * @return the NoteDto of the retrieved note.
      */
+    @Transactional(readOnly = true)
     public NoteDto getNoteById(Long id) {
-        return notesRepository.mapToDto(
+        return noteMapper.mapToDto(
                 notesRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id)));
     }
 
@@ -33,8 +39,9 @@ public class NoteService {
      * Retrieves all notes.
      * @return a List of NoteDto representing all notes.
      */
+    @Transactional(readOnly = true)
     public List<NoteDto> getAllNotes() {
-        return notesRepository.findAll().stream().map(notesRepository::mapToDto).toList();
+        return notesRepository.findAll().stream().map(noteMapper::mapToDto).toList();
     }
 
     /**
@@ -44,13 +51,13 @@ public class NoteService {
      */
     @Transactional
     public NoteDto createNote(NoteDto request) {
-        if (notesRepository.existsNoteByName(request.getName())) {
-            throw new IllegalArgumentException("Note with such name: " + request.getName() + " already exists");
+        if (notesRepository.existsNoteByName(request.name())) {
+            throw new IllegalArgumentException("Note with such name: " + request.name() + " already exists");
         }
 
-        Note noteToBeSaved = notesRepository.mapToEntity(request);
+        Note noteToBeSaved = noteMapper.mapToEntity(request);
 
-        return notesRepository.mapToDto(notesRepository.save(noteToBeSaved));
+        return noteMapper.mapToDto(notesRepository.save(noteToBeSaved));
     }
 
     /**
@@ -63,10 +70,10 @@ public class NoteService {
     public NoteDto updateNote(NoteDto newNote, Long id) {
         Note noteToUpdate = notesRepository.findNoteById(id).orElseThrow(() -> new IllegalArgumentException("Cannot find note with such id: " + id));
 
-        Optional.ofNullable(newNote.getName()).ifPresent(noteToUpdate::setName);
-        Optional.ofNullable(newNote.getDescription()).ifPresent(noteToUpdate::setDescription);
+        Optional.ofNullable(newNote.name()).ifPresent(noteToUpdate::setName);
+        Optional.ofNullable(newNote.description()).ifPresent(noteToUpdate::setDescription);
 
-        return notesRepository.mapToDto(notesRepository.save(noteToUpdate));
+        return noteMapper.mapToDto(notesRepository.save(noteToUpdate));
     }
 
     /**
@@ -76,7 +83,7 @@ public class NoteService {
     @Transactional
     public void deleteById(Long id) {
         if (!notesRepository.existsNoteById(id)) {
-            throw new IllegalArgumentException("Cannot find note with such id: " + id);
+            throw new NoSuchElementException("Cannot find note with such id: " + id);
         }
         notesRepository.deleteById(id);
     }

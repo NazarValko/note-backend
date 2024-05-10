@@ -145,7 +145,7 @@ class NoteControllerTest {
         NoteDto newNote = new NoteDto(null, "Existing Note", "This is a duplicate note", today);
 
         when(noteService.createNote(any(NoteDto.class)))
-                .thenThrow(new IllegalArgumentException("Note with such name: " + newNote.getName() + " already exists"));
+                .thenThrow(new IllegalArgumentException("Note with such name: " + newNote.name() + " already exists"));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/notes")
                         .contentType(MediaType.APPLICATION_JSON)

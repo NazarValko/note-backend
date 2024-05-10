@@ -1,7 +1,5 @@
 package org.nazar.notesbackend.service;
 
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +8,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.nazar.notesbackend.entity.Note;
 import org.nazar.notesbackend.entity.dto.NoteDto;
+import org.nazar.notesbackend.mapper.NoteMapper;
 import org.nazar.notesbackend.repository.NotesRepository;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,10 +32,14 @@ class NoteServiceTest {
     @Mock
     private NotesRepository notesRepository;
 
+    @Mock
+    private NoteMapper noteMapper;
+
     @InjectMocks
     private NoteService noteService;
 
     private NoteDto noteDto;
+
     private Note note;
 
     /**
@@ -40,15 +47,12 @@ class NoteServiceTest {
      */
     @BeforeEach
     void setUp() {
-        noteDto = new NoteDto();
-        noteDto.setId(1L);
-        noteDto.setName("Sample Note");
-        noteDto.setDescription("This is a sample note.");
+        noteDto = new NoteDto(1L, "Sample Note", "This is a sample note.", null);
 
         note = new Note();
-        note.setId(noteDto.getId());
-        note.setName(noteDto.getName());
-        note.setDescription(noteDto.getDescription());
+        note.setId(noteDto.id());
+        note.setName(noteDto.name());
+        note.setDescription(noteDto.description());
     }
 
     /**
@@ -57,12 +61,12 @@ class NoteServiceTest {
     @Test
     void testGetAllNotes_WhenNotesExist_ThenReturnNoteList() {
         when(notesRepository.findAll()).thenReturn(List.of(note));
-        when(notesRepository.mapToDto(any(Note.class))).thenReturn(noteDto);
+        when(noteMapper.mapToDto(any(Note.class))).thenReturn(noteDto);
 
         List<NoteDto> noteDtos = noteService.getAllNotes();
 
         assertEquals(1, noteDtos.size());
-        assertEquals("Sample Note", noteDtos.getFirst().getName());
+        assertEquals("Sample Note", noteDtos.getFirst().name());
     }
 
     /**
@@ -71,12 +75,12 @@ class NoteServiceTest {
     @Test
     void testGetNoteById_WhenNoteExists_ThenReturnNoteDto() {
         when(notesRepository.findById(1L)).thenReturn(Optional.of(note));
-        when(notesRepository.mapToDto(any(Note.class))).thenReturn(noteDto);
+        when(noteMapper.mapToDto(any(Note.class))).thenReturn(noteDto);
 
         NoteDto foundNote = noteService.getNoteById(1L);
 
         assertNotNull(foundNote);
-        assertEquals("Sample Note", foundNote.getName());
+        assertEquals("Sample Note", foundNote.name());
     }
 
     /**
@@ -96,15 +100,15 @@ class NoteServiceTest {
      */
     @Test
     void testCreateNote_WhenNameIsUnique_ThenReturnSavedNote() {
-        when(notesRepository.mapToEntity(noteDto)).thenReturn(note);
-        when(notesRepository.existsNoteByName(noteDto.getName())).thenReturn(false);
+        when(noteMapper.mapToEntity(noteDto)).thenReturn(note);
+        when(notesRepository.existsNoteByName(noteDto.name())).thenReturn(false);
         when(notesRepository.save(any(Note.class))).thenReturn(note);
-        when(notesRepository.mapToDto(any(Note.class))).thenReturn(noteDto);
+        when(noteMapper.mapToDto(any(Note.class))).thenReturn(noteDto);
 
         NoteDto savedNote = noteService.createNote(noteDto);
 
         assertNotNull(savedNote);
-        assertEquals("Sample Note", savedNote.getName());
+        assertEquals("Sample Note", savedNote.name());
     }
 
     /**
@@ -112,7 +116,7 @@ class NoteServiceTest {
      */
     @Test
     void testCreateNote_WhenNameAlreadyExists_ThenThrowException() {
-        when(notesRepository.existsNoteByName(noteDto.getName())).thenReturn(true);
+        when(notesRepository.existsNoteByName(noteDto.name())).thenReturn(true);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> noteService.createNote(noteDto));
 
@@ -126,12 +130,12 @@ class NoteServiceTest {
     void testUpdateNote_WhenNoteExists_ThenReturnUpdatedNote() {
         when(notesRepository.findNoteById(1L)).thenReturn(Optional.of(note));
         when(notesRepository.save(any(Note.class))).thenReturn(note);
-        when(notesRepository.mapToDto(any(Note.class))).thenReturn(noteDto);
+        when(noteMapper.mapToDto(any(Note.class))).thenReturn(noteDto);
 
         NoteDto updatedNote = noteService.updateNote(noteDto, 1L);
 
         assertNotNull(updatedNote);
-        assertEquals("Sample Note", updatedNote.getName());
+        assertEquals("Sample Note", updatedNote.name());
     }
 
     /**
@@ -164,7 +168,7 @@ class NoteServiceTest {
     void testDeleteById_WhenNoteDoesNotExist_ThenThrowException() {
         when(notesRepository.existsNoteById(anyLong())).thenReturn(false);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> noteService.deleteById(1L));
+        Exception exception = assertThrows(NoSuchElementException.class, () -> noteService.deleteById(1L));
 
         assertEquals("Cannot find note with such id: 1", exception.getMessage());
     }
